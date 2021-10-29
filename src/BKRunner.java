@@ -2,11 +2,17 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.neovisionaries.ws.client.ThreadType;
@@ -20,39 +26,71 @@ import com.neovisionaries.ws.client.WebSocketState;
 public class BKRunner implements WebSocketListener {
 	String token;
 	WebSocket socket;
+	String startDate;
+	String endDate;
+	String company;
+	String sortby;
+	String exclude;
+	String domain;
+	String language;
 	public BKRunner(String t) {
 		this.token=t;
-	}
-	public void makeNewConnection() {
 		
-		try {
-			WebSocketFactory wsf = new WebSocketFactory();
-			this.socket = wsf.createSocket(getGateway());
-			socket.addListener(this);
-			socket.connect();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (WebSocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		getHeadlines(getJsonObjectFromString(makeURL()));
+	}
 	
-		
-	}
 	public static void main(String[] args) throws IOException {
+		
+		
 		BufferedReader br = new BufferedReader(new FileReader("/Users/league/Desktop/tokenn.txt"));
 		String token = br.readLine();
 		br.close();
 		new BKRunner(token);
+		
 	}
 	
-	public String getGateway() {
+	public JsonObject getJsonObjectFromString(String input) {
+		JsonReader reader = Json.createReader(new StringReader(input));
+		JsonObject obj = reader.readObject();
+
+		return obj;
+
+	}
+
+	
+	public void getHeadlines(JsonObject obj) {
+		String url = obj.getString("status");
+		System.out.println(url);
+	}
+	
+	public String makeURL() {
 		String ans = "";
+		company = "tesla";
+		startDate = "2021-10-27";
+		endDate = "2021-10-28";
+		exclude = "theverge.com";
+		domain = "";
+		language = "en";
+		
 		try {
-			URL url = new URL("https://newsapi.org/v2/everything");
+			URL url = new URL("https://newsapi.org/v2/everything?q="+ company+ 
+					"&from="+startDate +"&to="+endDate + "&excludeDomains="+ exclude + "&domains="+ domain + "&language="+language);
+			
 			HttpsURLConnection h = (HttpsURLConnection)url.openConnection();
 			h.setRequestMethod("GET");
+			h.setRequestProperty("Authorization", token);
+			//h.setRequestProperty("User-Agent", "");
+			InputStream in = h.getInputStream();
+			String data = "";
+			int v = in.read();
+			while (v != -1) {
+				data += (char) v;
+				v = in.read();
+			}
+			System.out.println(data);
+			ans = data;
+			in.close();
+			h.disconnect();
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -61,6 +99,7 @@ public class BKRunner implements WebSocketListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		return ans;
 	}
 	
