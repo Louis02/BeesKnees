@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,8 +36,11 @@ public class BKRunner implements WebSocketListener {
 	String language;
 	public BKRunner(String t) {
 		this.token=t;
-		
-		getHeadlines(getJsonObjectFromString(makeURL()));
+		String url = makeURL();
+		String[] arr = findArray(url, "articles");
+		System.out.println(arr.length);
+		processArray(arr);
+		getData(url);
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -48,18 +52,124 @@ public class BKRunner implements WebSocketListener {
 		new BKRunner(token);
 		
 	}
+	public static String getStringFromJSONObject(String json, String key) {
+		String ans = "";
+		
+		for(int i = 1; i < json.length() - key.length() - 1; i++) {
+			if(json.substring(i - 1, i + key.length() + 1).equals("\"" + key + "\"")) {
+				int j = i + key.length() + 1;
+				char d = json.charAt(j);
+				while(d!='\"') {
+					j++;
+					d= json.charAt(j);
+				}
+				j++;
+				d=json.charAt(j);
+				while(d!='\"') {
+					System.out.println(json.indexOf('\"'));
+					ans+=d;
+					j++;
+					d= json.charAt(j);
+				}
+//				while(d != ',') {
+//					if(Character.isDigit(d)) {
+//						num += d;
+//					}
+//					j++;
+//					d = json.charAt(j);
+//				}
+				break;
+			}
+		}	
+		
+		return ans;
+	}
+	public void processArray(String[] s) {
+		for(int i = 0; i<s.length;i++) {
+			System.out.println(s[i]);
+		}
+	}
+	public String[] findArray(String json, String key){
+		
+		String s ="";
+		for(int i = 1;i<json.length()-key.length()-1;i++) {
+			if(json.substring(i-1, i+key.length()+1).equals("\""+key+"\"")) {
+				int j = i+key.length()+1;
+				char c = json.charAt(j);
+				while(c!='[') {
+					c= json.charAt(++j);
+					
+				}
+				s+=c;
+				int bctr=0;
+				while(true) {
+					c = json.charAt(++j);
+					s+=c;
+					if(c=='['&&bctr ==0) {
+						break;
+					}
+					else if(c=='[') {
+						bctr++;
+						
+					}
+					else if(c==']') {
+						bctr--;
+					}
+					
+				}
+				break;
+			}
+		}
+		return parseJSONArray(s);
+	}
+	public static String[] parseJSONArray(String json) {
+		ArrayList<String> obs = new ArrayList<String>();
+		
+		for(int i = 0; i < json.length(); i++) {
+			char c = json.charAt(i);
+			if(c == '{') {
+				String v = "" + c;
+				int ctr = 0;
+				while(true) {
+					i++;
+					c = json.charAt(i);
+					v += c;
+					if(c == '}' && ctr == 0) {
+						break;
+					}else if(c == '}') {
+						ctr--;
+					}else if(c == '{') {
+						ctr++;
+					}
+				}
+				obs.add(v);
+			}
+			
+		}
+		
+		return obs.toArray(new String[obs.size()]);
+	}
 	
+
+
 	public JsonObject getJsonObjectFromString(String input) {
 		JsonReader reader = Json.createReader(new StringReader(input));
-		JsonObject obj = reader.readObject();
+		JsonObject obj = null;
+		try {
+					 obj = reader.readObject();
+		} catch (Exception e) {
+			System.out.println("error");
+		}
+
 
 		return obj;
 
 	}
 
 	
-	public void getHeadlines(JsonObject obj) {
-		String url = obj.getString("status");
+	public void getData(String obj) {
+		
+		String url = getStringFromJSONObject(obj, "status");
 		System.out.println(url);
 	}
 	
@@ -68,7 +178,7 @@ public class BKRunner implements WebSocketListener {
 		company = "tesla";
 		startDate = "2021-10-27";
 		endDate = "2021-10-28";
-		exclude = "theverge.com";
+		exclude = "";
 		domain = "";
 		language = "en";
 		
