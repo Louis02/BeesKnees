@@ -40,15 +40,14 @@ public class BKRunner implements WebSocketListener {
 	String domain;
 	String language;
 	String[] arr;
-	
+	boolean searched = false;
+
 	public BKRunner(String t) {
 		this.token = t;
-		String url = makeURL();
-		 arr = findArray(url, "articles");
 		createUI();
-		getData(arr[0]);
-		getData(arr[1]);
-		getData(arr[2]);
+		
+		
+		
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -74,7 +73,7 @@ public class BKRunner implements WebSocketListener {
 				j++;
 				d = json.charAt(j);
 				while (d != '\"') {
-					//System.out.println(json.indexOf('\"'));
+					// System.out.println(json.indexOf('\"'));
 					ans += d;
 					j++;
 					d = json.charAt(j);
@@ -92,21 +91,23 @@ public class BKRunner implements WebSocketListener {
 
 		return ans;
 	}
-	public void createUI() {
+
+	public ArrayList<String> createUI() {
+		ArrayList<String> array = new ArrayList<String>();
 		JFrame frame = new JFrame();
 		JPanel panel = new JPanel();
-		
+
 		JTextField text = new JTextField(20);
 		JTextField text2 = new JTextField(20);
 		JTextField text3 = new JTextField(20);
 		JTextField text4 = new JTextField(20);
 		JTextField text5 = new JTextField(20);
 		JTextField text6 = new JTextField(20);
-		
+
 		JLabel label = new JLabel();
 		JLabel label2 = new JLabel();
 		JLabel label3 = new JLabel();
-		
+
 		JLabel searchTermm = new JLabel();
 		JLabel fromm = new JLabel();
 		JLabel too = new JLabel();
@@ -114,13 +115,13 @@ public class BKRunner implements WebSocketListener {
 		JLabel domainn = new JLabel();
 		JLabel languagee = new JLabel();
 		JButton button = new JButton();
-		
+
 		frame.add(panel);
-		
+
 		panel.add(label);
 		panel.add(label2);
 		panel.add(label3);
-		
+
 		panel.add(searchTermm);
 		panel.add(text);
 		panel.add(fromm);
@@ -133,44 +134,45 @@ public class BKRunner implements WebSocketListener {
 		panel.add(text5);
 		panel.add(languagee);
 		panel.add(text6);
-	
-		
+
 		panel.add(button);
-		
+
 		button.setText("Search");
-		
-		label.setText(getData(arr[0]));
-		label2.setText(getData(arr[1]));
-		label3.setText(getData(arr[2]));
-		
+
+		// label.setText(getData(arr[3]));
+		// label2.setText(getData(arr[1]));
+		// label3.setText(getData(arr[2]));
+
 		searchTermm.setText("Search Term: ");
 		fromm.setText("From (Start Date): ");
 		too.setText("To (End Date): ");
 		excludee.setText("Exclude: ");
 		domainn.setText("Domain: ");
 		languagee.setText("Language: ");
-		button.addActionListener((e)->{
-			String searchTerm = text.getText();
-			String from = text2.getText();
-			String to = text3.getText();
-			String exclude = text4.getText();
-			String domain = text5.getText();
-			String language = text6.getText();
-			
-			System.out.println(searchTerm);
-			System.out.println(from);
-			System.out.println(to);
-			System.out.println(exclude);
-			System.out.println(domain);
-			System.out.println(language);
-
+		button.addActionListener((e) -> {
+			array.add(text.getText());
+			array.add(text2.getText());
+			array.add(text3.getText());
+			array.add(text4.getText());
+			array.add(text5.getText());
+			array.add(text6.getText());
+			searched = true;
+//			System.out.println(searchTerm);
+//			System.out.println(from);
+//			System.out.println(to);
+//			System.out.println(exclude);
+//			System.out.println(domain);
+//			System.out.println(language);
+			String url = searchNewsApi(array.get(0), array.get(1), array.get(2), array.get(3), array.get(4), array.get(5));
+			arr = findArray(url, "articles");
+			System.out.println(getData(arr[0]));
 		});
-		
-		
+
 		frame.setVisible(true);
 		frame.setSize(1000, 700);
-	}
 
+		return null;
+	}
 
 	public String[] findArray(String json, String key) {
 
@@ -187,46 +189,43 @@ public class BKRunner implements WebSocketListener {
 				int bctr = 0;
 				while (true) {
 					c = json.charAt(++j);
-					//System.out.println(c);
+					// System.out.println(c);
 					s += c;
-					if (c == '[' ) {
-						if (json.charAt(j+1)== '+') {
-							while(c!=']') {
+					if (c == '[') {
+						if (json.charAt(j + 1) == '+') {
+							while (c != ']') {
 								c = json.charAt(++j);
 							}
-							
-						}
-						else {
+
+						} else {
 							bctr++;
-					
+
 						}
 					} else if (c == ']') {
-						if(bctr==0) {
+						if (bctr == 0) {
 							break;
+						} else {
+							// System.out.println("decreasing");
+							bctr--;
 						}
-						else {
-						//	System.out.println("decreasing");
-						bctr--;
-						}
-						
 
 					} else if (c == '[') {
-						if (json.charAt(j+1)== '+') {
-							while(c!=']') {
+						if (json.charAt(j + 1) == '+') {
+							while (c != ']') {
 								c = json.charAt(j);
 							}
-							
-						}else {
+
+						} else {
 							bctr++;
 						}
-						
+
 					}
 
 				}
 				break;
 			}
 		}
-		
+
 		return parseJSONArray(s);
 	}
 
@@ -243,10 +242,10 @@ public class BKRunner implements WebSocketListener {
 					c = json.charAt(i);
 					v += c;
 					if (c == '}' && ctr == 0) {
-					//	System.out.println(v);
+						// System.out.println(v);
 						break;
 					} else if (c == '}') {
-					//	System.out.println(ctr);
+						// System.out.println(ctr);
 						ctr--;
 					} else if (c == '{') {
 						ctr++;
@@ -256,7 +255,7 @@ public class BKRunner implements WebSocketListener {
 			}
 
 		}
-		
+
 		return obs.toArray(new String[obs.size()]);
 	}
 
@@ -274,19 +273,14 @@ public class BKRunner implements WebSocketListener {
 	}
 
 	public String getData(String obj) {
-		
+
 		String url = getStringFromJSONObject(obj, "url");
 		return url;
 	}
 
-	public String makeURL() {
+	public String searchNewsApi(String company, String startDate, String endDate, String exclude, String domain,
+			String language) {
 		String ans = "";
-		company = "phone";
-		startDate = "";
-		endDate = "";
-		exclude = "";
-		domain = "";
-		language = "en";
 
 		try {
 			URL url = new URL("https://newsapi.org/v2/everything?q=" + company + "&from=" + startDate + "&to=" + endDate
@@ -319,23 +313,6 @@ public class BKRunner implements WebSocketListener {
 		return ans;
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	@Override
 	public void handleCallbackError(WebSocket arg0, Throwable arg1) throws Exception {
 		// TODO Auto-generated method stub
