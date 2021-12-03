@@ -1,1 +1,37 @@
-<html> hello! </html>
+<html>
+<div id = "mainDivID">
+Search:
+<input id="SearchID"></input>
+<br> To:
+<input id="ToID"></input>
+<br> From:
+<input id="FromID"></input>
+<br> Language:
+<input id="LangID"></input>
+<br> Sort By:
+<input id="SortID"></input>
+<br>
+<button id="SubmitID" onclick="submitData()">Submit</button>
+
+<script type="text/javascript">
+	function submitData() {
+		let search = document.getElementById("SearchID");
+		let to = document.getElementById("ToID");
+		let from = document.getElementById("FromID");
+		let lang = document.getElementById("LangID");
+		let sort = document.getElementById("SortID");
+
+		let connection = new XMLHttpRequest();
+
+		connection.open("GET", "http://localhost:8080/search="+search.value+ "&" + to.value +"&" + from.value + "&" + lang.value + "&"+ sort.value);
+
+		connection.send();
+		connection.onreadystatechange = function() {
+			if (this.status == 200) {
+				document.getElementById("mainDivID").innerHTML = connection.responseText;
+			}
+		}
+	}
+</script>
+</div>
+</html>
