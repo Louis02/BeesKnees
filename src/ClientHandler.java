@@ -1,12 +1,17 @@
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientHandler implements Runnable {
 	Socket socket;
+	String[] results;
+
+	BKRunner run;
 
 	public ClientHandler(Socket socket) {
 		this.socket = socket;
@@ -24,7 +29,7 @@ public class ClientHandler implements Runnable {
 			while (c != -1) {
 				total += (char) c;
 				if (total.equals("\r")) {
-					System.out.println("near break");
+
 					break;
 				}
 
@@ -58,11 +63,13 @@ public class ClientHandler implements Runnable {
 				out.write(file.getBytes());
 				out.close();
 				in.close();
-			}
-			else if(query.contains("search=")) {
-				String data = query.substring(6, query.length());
-				String[] results = data.split("&");
-				System.out.println("here");
+			} else if (query.contains("search=")) {
+				
+				String data = query.substring(7, query.length());
+				results = data.split("&");
+				for (int i = 0; i < results.length; i++) {
+					System.out.println("here are the results at " + i + "     " + results[i]);
+				}
 				String send = "<html>here are your results</html>";
 				OutputStream out = socket.getOutputStream();
 				out.write("HTTP/1.0 200 OK\r\n".getBytes());
@@ -72,12 +79,53 @@ public class ClientHandler implements Runnable {
 				out.write(send.getBytes());
 				out.close();
 				in.close();
+				BufferedReader br = null;
+				try {
+					br = new BufferedReader(new FileReader("/Users/league/Desktop/tokenn.txt"));
+					String token = br.readLine();
+
+					br.close();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				run = new BKRunner(br.toString());
+				run.callGetData(results[0], results[1], results[2], results[3], results[4]);
 			}
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		// System.out.println(results.length);
+	}
+	
+	public String[] nullSplit(String in){
+		String[] ans  = null;
+		String add = "";
+		int ansCount = 0;
+		for (int i = 0; i < in.length(); i++) {
+			if(in.charAt(i)!='&') {
+				add+=in.charAt(i);
+			}
+			else {
+				ans[ansCount] = add;
+				ansCount++;
+				if(in.indexOf(i+1)<=in.length()&&in.charAt(i+1)=='&') {
+					add+="";
+				}
+				else if(in.indexOf(i+1)<=in.length()) {
+					add="";
+				}
+			}
+		}
+		System.out.println(ans);
+		return ans;
+		
 	}
 
 }

@@ -4,11 +4,12 @@ import java.net.Socket;
 
 public class NewServer {
 	public static void main(String[] args) {
+		ClientHandler handler = null;
 		try {
 			ServerSocket server = new ServerSocket(8080);
-			while(true) {
+			while(true) {		
 				Socket client = server.accept();
-				ClientHandler handler = new ClientHandler(client);
+				handler = new ClientHandler(client);
 				Thread t = new Thread(handler);
 				t.start();
 				
@@ -18,5 +19,6 @@ public class NewServer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 	}
 }

@@ -22,7 +22,19 @@ Search:
 		let sort = document.getElementById("SortID");
 
 		let connection = new XMLHttpRequest();
-
+	if(search.value!=null){
+		if(to.value==""){
+			to.value="%";
+		}
+		if(from.value==""){
+			from.value="%";
+		}
+		if(lang.value==""){
+			lang.value="%";
+		}
+		if(sort.value==""){
+			sort.value="%";
+		}
 		connection.open("GET", "http://localhost:8080/search="+search.value+ "&" + to.value +"&" + from.value + "&" + lang.value + "&"+ sort.value);
 
 		connection.send();
@@ -31,6 +43,8 @@ Search:
 				document.getElementById("mainDivID").innerHTML = connection.responseText;
 			}
 		}
+	}
+		
 	}
 </script>
 </div>
