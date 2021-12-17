@@ -43,8 +43,10 @@ public class BKRunner implements WebSocketListener {
 	boolean searched = false;
 
 	public BKRunner(String t) {
+
 		this.token = t;
-		//createUI();
+		System.out.println("                     token " + token);
+		// createUI();
 
 	}
 
@@ -140,7 +142,7 @@ public class BKRunner implements WebSocketListener {
 		searchTermm.setText("Search Term: ");
 		fromm.setText("From (Start Date): ");
 		too.setText("To (End Date): ");
-		
+
 		domainn.setText("Domain: ");
 		languagee.setText("Language: ");
 		button.addActionListener((e) -> {
@@ -149,7 +151,7 @@ public class BKRunner implements WebSocketListener {
 			array.add(text3.getText());
 			array.add(text4.getText());
 			array.add(text5.getText());
-			
+
 			searched = true;
 //			System.out.println(searchTerm);
 //			System.out.println(from);
@@ -161,11 +163,12 @@ public class BKRunner implements WebSocketListener {
 //			String url = searchNewsApi(array.get(0), array.get(1), array.get(2), array.get(3), array.get(4), array.get(5));
 //			arr = findArray(url, "articles");
 //			System.out.println(getData(arr[0]));
-		String url = searchNewsApi(array.get(0), array.get(1), array.get(2), array.get(3), array.get(4));
-		arr = findArray(url, "articles");
-		System.out.println(getData(arr[0]));
+			String url = searchNewsApi(array.get(0), array.get(1), array.get(2), array.get(3), array.get(4));
+			arr = findArray(url, "articles");
+			System.out.println("          here is " + arr[0]);
+			//System.out.println(getData());
 		});
-		
+
 		frame.setVisible(true);
 		frame.setSize(1000, 700);
 
@@ -174,9 +177,9 @@ public class BKRunner implements WebSocketListener {
 
 	public void callGetData(String company, String startDate, String endDate, String domain, String language) {
 		System.out.println("called");
-		String url = searchNewsApi(company, startDate, endDate, domain, language);	
+		String url = searchNewsApi(company, startDate, endDate, domain, language);
 		arr = findArray(url, "articles");
-		System.out.println(getData(arr[0]));
+		//System.out.println(getData());
 	}
 
 	public String[] findArray(String json, String key) {
@@ -277,22 +280,52 @@ public class BKRunner implements WebSocketListener {
 
 	}
 
-	public String getData(String obj) {
+	ArrayList<String> url = new ArrayList<String>();
 
-		String url = getStringFromJSONObject(obj, "url");
+	public ArrayList<String> getData(String company, String startDate, String endDate, String domain, String language) {
+		String searcher = searchNewsApi(company, startDate, endDate, domain, language);
+		arr = findArray(searcher, "articles");
+		
+	
+		for (int i = 0; i < arr.length; i++) {
+			url.add(getStringFromJSONObject(arr[i], "url"));
+		}
+
 		System.out.println("url what im trying to find       " + url);
 		return url;
 	}
 
 	public String searchNewsApi(String company, String startDate, String endDate, String domain, String language) {
+		if (company.equals("%")) {
+			System.out.println("cannot run");
+		}
+		if (startDate.equals("%")) {
+			System.out.println(startDate);
+			startDate = "";
+		}
+		if (endDate.equals("%")) {
+			System.out.println(endDate);
+			endDate = "";
+		}
+		if (domain.equals("%")) {
+			System.out.println(domain);
+			domain = "";
+		}
+		if (language.equals("%")) {
+			System.out.println(language);
+			language = "";
+		}
 		String ans = "";
 
 		try {
+			System.out.println("https://newsapi.org/v2/everything?q=" + company + "&from=" + startDate + "&to="
+					+ endDate + "&domains=" + domain + "&language=" + language);
 			URL url = new URL("https://newsapi.org/v2/everything?q=" + company + "&from=" + startDate + "&to=" + endDate
 					+ "&domains=" + domain + "&language=" + language);
 
 			HttpsURLConnection h = (HttpsURLConnection) url.openConnection();
 			h.setRequestMethod("GET");
+			System.out.println(token);
 			h.setRequestProperty("Authorization", token);
 			// h.setRequestProperty("User-Agent", "");
 			InputStream in = h.getInputStream();

@@ -64,25 +64,11 @@ public class ClientHandler implements Runnable {
 				out.close();
 				in.close();
 			} else if (query.contains("search=")) {
-				
-				String data = query.substring(7, query.length());
-				results = data.split("&");
-				for (int i = 0; i < results.length; i++) {
-					System.out.println("here are the results at " + i + "     " + results[i]);
-				}
-				String send = "<html>here are your results</html>";
-				OutputStream out = socket.getOutputStream();
-				out.write("HTTP/1.0 200 OK\r\n".getBytes());
-				String input = "Content-Length: " + send.length() + "\r\n";
-				out.write(input.getBytes());
-				out.write("Content-Type: text/html\r\n\r\n".getBytes());
-				out.write(send.getBytes());
-				out.close();
-				in.close();
 				BufferedReader br = null;
+				String token ="";
 				try {
 					br = new BufferedReader(new FileReader("/Users/league/Desktop/tokenn.txt"));
-					String token = br.readLine();
+					 token = br.readLine();
 
 					br.close();
 				} catch (FileNotFoundException e) {
@@ -92,8 +78,33 @@ public class ClientHandler implements Runnable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				run = new BKRunner(br.toString());
+				run = new BKRunner(token);
+				
+				String data = query.substring(7, query.length());
+				results = data.split("&");
 				run.callGetData(results[0], results[1], results[2], results[3], results[4]);
+				for (int i = 0; i < results.length; i++) {
+					
+					System.out.println("here are the results at " + i + "     " + results[i]);
+				}
+				ArrayList<String> dataGet = run.getData(results[0], results[1], results[2], results[3], results[4]);
+				String send = "<html>";
+				for(int i = 0;i<dataGet.size();i++) {
+					String u = dataGet.get(i);
+					send += "<a href=\""+u +"\"> "+u+"</a>";
+					send+= "<br>";
+				}
+				send +="</html>";
+				OutputStream out = socket.getOutputStream();
+				out.write("HTTP/1.0 200 OK\r\n".getBytes());
+				String input = "Content-Length: " + send.length() + "\r\n";
+				out.write(input.getBytes());
+				out.write("Content-Type: text/html\r\n\r\n".getBytes());
+				out.write(send.getBytes());
+				out.close();
+				in.close();
+				
+				
 			}
 
 		} catch (IOException e) {
